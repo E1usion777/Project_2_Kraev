@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Прогноз погоды для заданного маршрута</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .error {
+            color: red;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e7f3fe;
+            border-left: 6px solid #2196F3; /* Blue left border */
+        }
+    </style>
+</head>
+<body>
+<h1>Проверка погоды</h1>
+
+<form action="/weather" method="post">
+    <label for="start_city">Начальный город:</label>
+    <input type="text" id="start_city" name="start_city" required placeholder="Введите начальный город">
+
+    <label for="end_city">Конечный город:</label>
+    <input type="text" id="end_city" name="end_city" required placeholder="Введите конечный город">
+
+    <button type="submit">Проверить погоду</button>
+</form>
+
+{% if error %}
+<p class="error">{{ error }}</p>
+{% endif %}
+
+{% if message %}
+<div class="result">
+    <h2>Результаты:</h2>
+    <p>{{ message }}</p>
+</div>
+{% endif %}
+
+{% if temperature_start %}
+<div class="result">
+    <h3>Результаты для {{ start_city }}:</h3>
+    <p>Температура: {{ temperature_start }} °C</p>
+    <p>Скорость ветра: {{ wind_speed_start }} км/ч</p>
+    <p>Осадки: {{ precipitation_probability_start }} мм</p>
+</div>
+{% endif %}
+
+{% if temperature_end %}
+<div class="result">
+    <h3>Результаты для {{ end_city }}:</h3>
+    <p>Температура: {{ temperature_end }} °C</p>
+    <p>Скорость ветра: {{ wind_speed_end }} км/ч</p>
+    <p>Осадки: {{ precipitation_probability_end }} мм</p>
+</div>
+{% endif %}
+</body>
+</html>
