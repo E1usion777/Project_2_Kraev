@@ -3,7 +3,7 @@ import requests
 
 app = Flask(__name__)
 
-API_KEY = 'flfzTb3fcLHgaYB5sov7F0A3A78MnFn1'  # Замените на ваш API-ключ
+API_KEY = 'flfzTb3fcLHgaYB5sov7F0A3A78MnFn1'
 
 
 def check_bad_weather(temperature, wind_speed, precipitation_probability):
