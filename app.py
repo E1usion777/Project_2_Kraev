@@ -1,24 +1,29 @@
 from flask import Flask, request, render_template
 import requests
+from dataclasses import dataclass
+import datetime
 
 app = Flask(__name__)
 
 API_KEY = 'flfzTb3fcLHgaYB5sov7F0A3A78MnFn1'
 
+@dataclass
+class Weather:
+    """ Модель данных погоды"""
+    city: str
+    temperature: float
+    wind_speed: float
+    precipitation_probability: float
+    timestamp: datetime
 
-def check_bad_weather(temperature, wind_speed, precipitation_probability):
-    """
-    Функция для оценки погодных условий.
-    """
-
-
-    if temperature < 0 or temperature > 35:
-        return False
-    if wind_speed > 50:
-        return False
-    if precipitation_probability > 70:
-        return False
-    return True
+    def is_good_weather(self):
+        if self.temperature < 0 or self.temperature > 35:
+            return False
+        if self.wind_speed > 50:
+            return False
+        if self.precipitation_probability > 70:
+            return False
+        return True
 
 
 @app.route('/')
@@ -31,7 +36,7 @@ def get_weather():
     start_city = request.form['start_city']
     end_city = request.form['end_city']
 
-    #Определяем ключ города по его названию
+    # Получаем данные о погоде для начального города
     location_url_start = f'http://dataservice.accuweather.com/locations/v1/cities/search?apikey={API_KEY}&q={start_city}'
     location_response_start = requests.get(location_url_start)
 
@@ -58,14 +63,17 @@ def get_weather():
 
     temperature_start = current_conditions_start['Temperature']['Metric']['Value']
     wind_speed_start = current_conditions_start['Wind']['Speed']['Metric']['Value']
-    precipitation_probability_start = current_conditions_start['PrecipitationSummary']['Precipitation']['Metric']['Value']
+    precipitation_probability_start = current_conditions_start['PrecipitationSummary']['Precipitation']['Metric']['Value'] or 0
 
-    if precipitation_probability_start is None:
-        precipitation_probability_start = 'Нет данных'
+    weather_condition_start = Weather(
+        city=start_city,
+        temperature=temperature_start,
+        wind_speed=wind_speed_start,
+        precipitation_probability=precipitation_probability_start,
+        timestamp=datetime.datetime.now(datetime.UTC)
+    )
 
-    good_weather_start = check_bad_weather(temperature_start, wind_speed_start, precipitation_probability_start)
 
-    # Получаем ключ для конечного города
     location_url_end = f'http://dataservice.accuweather.com/locations/v1/cities/search?apikey={API_KEY}&q={end_city}'
     location_response_end = requests.get(location_url_end)
 
@@ -93,15 +101,17 @@ def get_weather():
 
     temperature_end = current_conditions_end['Temperature']['Metric']['Value']
     wind_speed_end = current_conditions_end['Wind']['Speed']['Metric']['Value']
-    precipitation_probability_end = current_conditions_end['PrecipitationSummary']['Precipitation']['Metric']['Value']
+    precipitation_probability_end = current_conditions_end['PrecipitationSummary']['Precipitation']['Metric']['Value'] or 0
 
-    if precipitation_probability_end is None:
-        precipitation_probability_end = 'Нет данных'
+    weather_condition_end = Weather(
+        city=end_city,
+        temperature=temperature_end,
+        wind_speed=wind_speed_end,
+        precipitation_probability=precipitation_probability_end,
+        timestamp=datetime.datetime.now(datetime.UTC)
+    )
 
-    good_weather_end = check_bad_weather(temperature_end, wind_speed_end, precipitation_probability_end)
-
-    # Логика принятия решения о походе
-    if good_weather_start and good_weather_end:
+    if weather_condition_start.is_good_weather() and weather_condition_end.is_good_weather():
         message = "Время идти в путешествие!"
     else:
         message = "Не самое подходящее время для путешествий."
